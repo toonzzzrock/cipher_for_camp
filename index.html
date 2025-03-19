@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #c5c5c5;
+            font-size: 1.05em; /* Increase base font size */
+        }
+        .cipher-item input.duplicate {
+            color: red;
+        }
+        .cipher-item input.used {
+            color: green;
+        }
+        .cipher-item input {
+            width: 5em; /* Adjust width to fit one character */
+            font-size: 1.1em; /* Increase font size */
+        }
+        .deciphered {
+            white-space: pre-wrap;
+            background-color: white;
+            font-size: 1.1em; /* Increase font size */
+        }
+        .deciphered span {
+            color: black;
+        }
+        .deciphered span.green {
+            color: green;
+        }
+        .deciphered span.red {
+            color: red;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+        a {
+            text-decoration: underline;
+        }
+        .rainbow {
+            background: linear-gradient(to right, #ef5350, #f48fb1, #7e57c2, #2196f3, #26c6da, #43a047, #eeff41, #f9a825, #ff5722);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .effect-text {
+            color: pink !important;
+            position: relative;
+        }
+        .tiny-heart {
+            position: absolute;
+            opacity: 0;
+            background-color: #D90429;
+            box-shadow: 0px 0px 50px 4px transparentize(#EF233C, .3);
+            animation: animated-heart infinite ease-in;
+        }
+        .tiny-heart:before, .tiny-heart:after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #D90429;
+        }
+        .tiny-heart:before {
+            transform: translateX(-50%);
+        }
+        .tiny-heart:after {
+            transform: translateY(-50%);
+        }
+        @keyframes animated-heart {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(45deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(0, -40%) rotate(45deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(0, -1000%) rotate(45deg);
+            }
+        }
+    </style>
+</head>
+<body class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <textarea id="originalText" class="form-control" rows="15" style="font-size: 1.2em;">Fyrk rk fyh ohkkueh fyuf zrxx dh hbapmlfhi.
+Rf rk u khaphf ohkkueh fyuf sbxm fyh rbfhbihi pharlrhbf kysgxi dh udxh fs phui.
+Fyh hbapmlfrsb ohfysi gkhi rk u krolxh kgdkfrfgfrsb arlyhp.
+Fyh nhm vsp fyh arlyhp rk u pubisoxm ehbhpufhi kfprbe sv ayupuafhpk.
+Fyh nhm rk gkhi fs oul huay xhffhp sv fyh uxlyudhf fs u irvvhphbf xhffhp.
+Fyh phux ohkkueh rk vsp fyh asooubihp sv fyh upom.
+Fyh asooubihp rk u dputh ubi vhupxhkk xhuihp.
+Fyh asooubihp yuk u irvvragxf fukn uyhui sv yro.
+Yh ogkf xhui yrk fpsslk rbfs duffxh ueurbkf u vsporiudxh hbhom.
+Fyh hbhom rk zhxx-lphluphi ubi yuk u kfpsbe lskrfrsb.
+Fyh asooubihp ogkf gkh uxx sv yrk knrxxk ubi hjlhprhbah fs sgfkoupf fyh hbhom.
+Fyh asooubihp yuk u xsmux ubi ihiraufhi fhuo sv ksxirhpk.
+Hthb fysgey fyh siik uph ueurbkf fyho, fyhm uph ihfhporbhi fs kgaahhi.
+Fyh ksxirhpk uph zhxx-fpurbhi ubi phuim vsp uafrsb.
+Fyh ksxirhpk fpgkf fyhrp asooubihp ubi zrxx vsxxsz yro rbfs duffxh.
+Fyh zup zrxx dherb uf iuzb.
+Fyh ksxirhpk zrxx dh phuim fs vreyf.
+Fyh asooubihp zrxx erth fyh spihp fs uffuan zyhb fyh froh rk preyf.
+Fyh ksxirhpk zrxx vreyf dputhxm ubi zrfy ysbsp, duffxh vpso fyh bspfy fs fyh ksgfy.
+Fyh asooubihp zrxx xhui fyho fs trafspm.</textarea>
+        </div>
+        <div class="col-md-8">
+            <div id="decipheredText" class="deciphered border p-3"></div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="cipher-list d-flex flex-wrap" id="cipherList"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const originalText = document.getElementById('originalText');
+        const decipheredText = document.getElementById('decipheredText');
+        const cipherList = document.getElementById('cipherList');
+
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+        const cipherMap = {};
+        const usedLetters = new Map();
+        let focusedInput = null;
+
+        // Initialize cipher list
+        function initializeCipherList() {
+            cipherList.innerHTML = '';
+            alphabet.split('').forEach(letter => {
+                cipherMap[letter] = letter;
+
+                const item = document.createElement('div');
+                item.className = 'cipher-item m-2';
+                item.innerHTML = `
+                    <span>${letter}</span>
+                    <input type="text" class="form-control" maxlength="1" data-letter="${letter}" value="${letter}" />
+                `;
+
+                const input = item.querySelector('input');
+                input.addEventListener('input', updateCipher);
+                input.addEventListener('focus', (event) => {
+                    event.target.select();
+                    focusedInput = event.target;
+                }); // auto-select on focus
+                cipherList.appendChild(item);
+
+                usedLetters.set(letter, 1);
+            });
+
+            updateUsedLetters();
+            updateDecipheredText();
+        }
+
+        // Deselect input when clicking outside
+        document.addEventListener('click', (event) => {
+            if (focusedInput && !cipherList.contains(event.target)) {
+                focusedInput.blur();
+                focusedInput = null;
+            }
+        });
+
+        // Update cipher mappings and deciphered text
+        function updateCipher(event) {
+            const input = event.target;
+            const letter = input.dataset.letter;
+            const value = input.value.toLowerCase();
+
+            if (cipherMap[letter]) {
+                const oldMapping = cipherMap[letter];
+                if (usedLetters.has(oldMapping)) {
+                    usedLetters.set(oldMapping, usedLetters.get(oldMapping) - 1);
+                    if (usedLetters.get(oldMapping) === 0) {
+                        usedLetters.delete(oldMapping);
+                    }
+                }
+            }
+
+            cipherMap[letter] = value;
+
+            if (value) {
+                if (!usedLetters.has(value)) {
+                    usedLetters.set(value, 1);
+                } else {
+                    usedLetters.set(value, usedLetters.get(value) + 1);
+                }
+            }
+
+            updateUsedLetters();
+            updateDecipheredText();
+        }
+
+        // Update deciphered text based on cipherMap
+        function updateDecipheredText() {
+            const original = originalText.value;
+            decipheredText.innerHTML = ''; // Clear the deciphered text container
+
+            for (const char of original) {
+                const span = document.createElement('span');
+                span.dataset.originalLetter = char.toLowerCase(); // Store original letter in lowercase for consistent mapping
+
+                if (/[a-zA-Z]/.test(char)) { // Check if the character is a letter
+                    const isUpperCase = char === char.toUpperCase();
+                    const mappedChar = cipherMap[char.toLowerCase()] || char.toLowerCase();
+                    span.textContent = isUpperCase ? mappedChar.toUpperCase() : mappedChar;
+
+                    // Assign color classes
+                    if (usedLetters.get(mappedChar) > 1) {
+                        span.className = 'red';
+                    } else if (mappedChar.toLowerCase() !== char.toLowerCase()) {
+                        span.className = 'green';
+                    }
+                } else {
+                    span.textContent = char; // Keep non-alphabet characters unchanged
+                    span.style.color = 'black'; // Default color
+                }
+
+                // Add hover effects
+                span.addEventListener('mouseover', () => highlightAll(span.dataset.originalLetter));
+                span.addEventListener('mouseout', () => clearHighlight());
+
+                decipheredText.appendChild(span);
+            }
+
+            applyHyperLinkEffect();
+        }
+
+
+        // Update highlightAll to include cipher input fields
+        function highlightAll(letter) {
+            const spans = decipheredText.querySelectorAll('span');
+            spans.forEach(s => {
+                if (s.dataset.originalLetter === letter) {
+                    s.classList.add('highlight');
+                }
+            });
+
+            const inputs = cipherList.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (input.dataset.letter === letter) {
+                    input.classList.add('highlight');
+                }
+            });
+        }
+
+        // Update clearHighlight to clear highlights from all elements
+        function clearHighlight() {
+            const spans = decipheredText.querySelectorAll('span.highlight');
+            spans.forEach(s => s.classList.remove('highlight'));
+
+            const inputs = cipherList.querySelectorAll('input.highlight');
+            inputs.forEach(input => input.classList.remove('highlight'));
+        }
+
+        // Add hover listeners to cipher inputs
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = cipherList.querySelectorAll('input');
+            inputs.forEach(input => {
+                const letter = input.dataset.letter;
+
+                input.addEventListener('mouseover', () => highlightAll(letter));
+                input.addEventListener('mouseout', () => clearHighlight());
+            });
+        });
+
+        function applyHyperLinkEffect() {
+            const spans = decipheredText.querySelectorAll('span');
+            let phrase = "https://www";
+            let matchIndex = 0;
+            let correct_end = 0;
+
+            for (let i = 0; i < spans.length; i++) {
+                if (spans[i].textContent === phrase[matchIndex]) {
+                    correct_end = i;
+                    matchIndex++;
+                } else {
+                    matchIndex = 0;
+                }
+                if (matchIndex === phrase.length) {
+                    break;
+                }
+            }
+            // remove the word and add 1 span of rainbow tag
+            if (matchIndex === phrase.length) {
+                // find next space/end of line/end of text
+                let link = "";
+                for (let i = correct_end + 1; i < spans.length; i++) {
+                    if (spans[i].textContent === " " || spans[i].textContent === "\n") {
+                        break;
+                    }
+                    link += spans[i].textContent;
+                }
+                phrase += link;
+                correct_end += link.length;
+
+                for (let i = correct_end - phrase.length + 1; i <= correct_end; i++) {
+                    spans[i].textContent = "";
+                }
+                const a_container = document.createElement('a');
+                a_container.href = phrase;
+                a_container.textContent = phrase;
+                a_container.target = "_blank";
+                decipheredText.insertBefore(a_container, spans[correct_end - phrase.length + 1]);
+
+            }
+        }
+
+
+        // Update visual style for used letters
+        function updateUsedLetters() {
+            const inputs = cipherList.querySelectorAll('input');
+
+            inputs.forEach(input => {
+                const value = input.value.toLowerCase();
+                const letter = input.dataset.letter;
+                if (usedLetters.has(value) && usedLetters.get(value) > 1) {
+                    input.classList.add('duplicate');
+                    input.classList.remove('used');
+                } else if (value && value !== letter) {
+                    input.classList.add('used');
+                    input.classList.remove('duplicate');
+                } else {
+                    input.classList.remove('duplicate', 'used');
+                }
+            });
+        }
+
+        // Initialize the tool
+        initializeCipherList();
+        // Listen for original text updates
+        originalText.addEventListener('input', updateDecipheredText);
+        originalText.addEventListener('keyup', updateDecipheredText);
+        originalText.addEventListener('click', updateDecipheredText);
+
+    </script>
+</body>
+</html>
