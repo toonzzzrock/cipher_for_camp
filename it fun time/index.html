@@ -76,15 +76,23 @@
         }
 
         .deciphered span.green {
-            color: #2b580c;
+            color: #00cc00; /* Brighter green for assigned text */
         }
 
         .deciphered span.red {
             color: #8b0000;
         }
 
+        .deciphered span.unassigned {
+            color: #555555; /* Black-grey color for unassigned text */
+        }
+
         .highlight {
-            background-color: #d9c077;
+            background-color: #ffcc00; /* Brighter yellow for highlights */
+        }
+
+        .key-highlight {
+            background-color: #ffcc00; /* Matching highlight color */
         }
 
         a {
@@ -204,8 +212,7 @@
                 <div class="paper-corner corner-top-right"></div>
                 <div class="paper-corner corner-bottom-left"></div>
                 <div class="paper-corner corner-bottom-right"></div>
-                <textarea id="originalText" class="form-control" rows="15" style="font-size: 1.2em;">
-Fgos os fga gxhp-cupa tahsoui uq fga cassxka fgxf zoyy ja aibhlefap.
+                <textarea id="originalText" class="form-control" rows="15" style="font-size: 1.2em;">Fgos os fga gxhp-cupa tahsoui uq fga cassxka fgxf zoyy ja aibhlefap.
 Suca favf os cosseayyap. Suca xha wnsf hxipuc yaffahs yola fgos: mzahfdnoue.
 xhsdnw xlupn d;dwmzqe cupvvdn uplrudw/udw mzqeupdw
 Xil fgx favf os tahd sguhe.
@@ -339,14 +346,22 @@ Zxha, fod sop</textarea>
 
                 if (/[a-zA-Z]/.test(char)) { // Check if the character is a letter
                     const isUpperCase = char === char.toUpperCase();
-                    const mappedChar = cipherMap[char.toLowerCase()] || char.toLowerCase();
+                    const lowerChar = char.toLowerCase();
+                    const mappedChar = cipherMap[lowerChar] || lowerChar;
                     span.textContent = isUpperCase ? mappedChar.toUpperCase() : mappedChar;
+
+                    // Find corresponding input to check if it's unassigned
+                    const inputField = Array.from(cipherList.querySelectorAll('input'))
+                        .find(input => input.dataset.letter === lowerChar);
+                    const isEmpty = !inputField || !inputField.value.trim();
 
                     // Assign color classes
                     if (usedLetters.get(mappedChar) > 1) {
                         span.className = 'red';
-                    } else if (mappedChar.toLowerCase() !== char.toLowerCase()) {
+                    } else if (!isEmpty) { // If input field has a value, it's assigned
                         span.className = 'green';
+                    } else {
+                        span.className = 'unassigned'; // Otherwise it's unassigned
                     }
                 } else {
                     span.textContent = char; // Keep non-alphabet characters unchanged
@@ -363,7 +378,7 @@ Zxha, fod sop</textarea>
             applyHyperLinkEffect();
         }
 
-        // Update highlightAll to include cipher input fields
+        // Update highlightAll to include cipher input fields and their labels
         function highlightAll(letter) {
             const spans = decipheredText.querySelectorAll('span');
             spans.forEach(s => {
@@ -376,6 +391,12 @@ Zxha, fod sop</textarea>
             inputs.forEach(input => {
                 if (input.dataset.letter === letter) {
                     input.classList.add('highlight');
+                    // Also highlight the symbol/label
+                    const parent = input.parentElement;
+                    const span = parent.querySelector('span');
+                    if (span) {
+                        span.classList.add('key-highlight');
+                    }
                 }
             });
         }
@@ -387,6 +408,9 @@ Zxha, fod sop</textarea>
 
             const inputs = cipherList.querySelectorAll('input.highlight');
             inputs.forEach(input => input.classList.remove('highlight'));
+
+            const keySpans = cipherList.querySelectorAll('span.key-highlight');
+            keySpans.forEach(span => span.classList.remove('key-highlight'));
         }
 
         // Add hover listeners to cipher inputs
