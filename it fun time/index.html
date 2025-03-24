@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secret Cipher Decoder</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     <style>
         body {
             background-color: #f0e6d2;
@@ -47,16 +49,18 @@
         .deciphered {
             white-space: pre-wrap;
             background-color: #f8f4e9;
-            font-size: 1.1em;
+            font-size: 1.4em;
             border: 1px solid #8b6b4c !important;
             border-radius: 0 !important;
             box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
             padding: 20px !important;
             min-height: 400px;
             height: 100%;
-            font-family: 'Special Elite', cursive;
+            font-family: 'Opan Sans', monospace, bold;
             position: relative;
             overflow: hidden;
+            letter-spacing: 1px;
+            line-height: 1.6;
         }
 
         .deciphered::before {
@@ -73,6 +77,7 @@
 
         .deciphered span {
             color: #3a3221;
+            display: inline-block;
         }
 
         .deciphered span.green {
@@ -206,25 +211,7 @@
 <body class="container mt-5">
     <h1 class="page-title">Enigma Machine</h1>
     <div class="row equal-height-row">
-        <div class="col-md-4 equal-height-col">
-            <div class="paper-container">
-                <div class="paper-corner corner-top-left"></div>
-                <div class="paper-corner corner-top-right"></div>
-                <div class="paper-corner corner-bottom-left"></div>
-                <div class="paper-corner corner-bottom-right"></div>
-                <textarea id="originalText" class="form-control" rows="15" style="font-size: 1.2em;">
-Xil fgx favf os tahd sguhe.
-Fga aibhdefoui os:
-Xqfah fga zxx, zaa qunip x byna fu x fhaxsnha fhuta.
-Fga fhaxsnha fhuta os ehufabfap jd x sahoas uq fhxes xip enrryas.
-Fncuhap fu ja bnhsap.
-Hubxfap oi x goppai xhax nipah fga fghuia uq fga loik.
-Qudn fha cdnncpg duncs cundc fudn cnuxlb dnwmzc
-Fga fhaxsnha fhuta sxop fu kota fga qoipah khaxf zaxyfg xip euzah.
-Zxha, fod sop</textarea>
-            </div>
-        </div>
-        <div class="col-md-8 equal-height-col">
+        <div class="col-md-12 equal-height-col">
             <div class="paper-container">
                 <div class="paper-corner corner-top-left"></div>
                 <div class="paper-corner corner-top-right"></div>
@@ -244,9 +231,20 @@ Zxha, fod sop</textarea>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        const originalText = document.getElementById('originalText');
+        const displayedText = document.getElementById('displayedText');
         const decipheredText = document.getElementById('decipheredText');
         const cipherList = document.getElementById('cipherList');
+
+        // Define original text as a constant instead of reading from hidden input
+        const originalText = `Xil fgx favf os tahd sguhe.
+Fga aibhdefoui os:
+Xqfah fga zxx, zaa qunip x byna fu x fhaxsnha fhuta.
+Fga fhaxsnha fhuta os ehufabfap jd x sahoas uq fhxes xip enrryas.
+Fncuhap fu ja bnhsap.
+Hubxfap oi x goppai xhax nipah fga fghuia uq fga loik.
+Qudn fha cdnncpg duncs cundc fudn cnuxlb dnwmzc
+Fga fhaxsnha fhuta sxop fu kota fga qoipah khaxf zaxyfg xip euzah.
+Zxha, fod sop`;
 
         const alphabet = 'abcdefghijklmnopqrstuvwxyz';
         const cipherMap = {};
@@ -273,6 +271,11 @@ Zxha, fod sop</textarea>
                     event.target.select();
                     focusedInput = event.target;
                 }); // auto-select on focus
+
+                // Add event listeners to the entire cipher item div
+                item.addEventListener('mouseover', () => highlightAll(letter));
+                item.addEventListener('mouseout', () => clearHighlight());
+
                 cipherList.appendChild(item);
 
                 usedLetters.set(encryptedChar, 1);
@@ -335,10 +338,10 @@ Zxha, fod sop</textarea>
 
         // Update deciphered text based on cipherMap
         function updateDecipheredText() {
-            const original = originalText.value;
+            // Using the constant originalText instead of originalText.value
             decipheredText.innerHTML = ''; // Clear the deciphered text container
 
-            for (const char of original) {
+            for (const char of originalText) {
                 const span = document.createElement('span');
                 span.dataset.originalLetter = char.toLowerCase(); // Store original letter in lowercase for consistent mapping
 
@@ -411,15 +414,10 @@ Zxha, fod sop</textarea>
             keySpans.forEach(span => span.classList.remove('key-highlight'));
         }
 
-        // Add hover listeners to cipher inputs
+        // Add hover listeners to cipher inputs (update to remove redundant event listeners)
         document.addEventListener('DOMContentLoaded', () => {
-            const inputs = cipherList.querySelectorAll('input');
-            inputs.forEach(input => {
-                const letter = input.dataset.letter;
-
-                input.addEventListener('mouseover', () => highlightAll(letter));
-                input.addEventListener('mouseout', () => clearHighlight());
-            });
+            // We don't need these anymore since we're adding event listeners to the entire cipher item div
+            // The existing event listeners on the input fields can remain for backward compatibility
         });
 
         function applyHyperLinkEffect() {
@@ -485,28 +483,19 @@ Zxha, fod sop</textarea>
 
         // Function to ensure equal heights
         function syncHeight() {
-            const originalTextHeight = originalText.scrollHeight;
+            const originalTextHeight = displayedText.scrollHeight;
             const decipheredHeight = decipheredText.scrollHeight;
             const maxHeight = Math.max(originalTextHeight, decipheredHeight, 400); // 400px minimum
 
-            originalText.style.height = maxHeight + 'px';
+            displayedText.style.height = maxHeight + 'px';
             decipheredText.style.height = maxHeight + 'px';
         }
 
         // Initialize the tool
         initializeCipherList();
 
-        // Listen for original text updates
-        originalText.addEventListener('input', function() {
-            updateDecipheredText();
-            syncHeight();
-        });
-        originalText.addEventListener('keyup', function() {
-            updateDecipheredText();
-            syncHeight();
-        });
-        originalText.addEventListener('click', updateDecipheredText);
-
-            </script>
+        // Listen for click on the displayed text
+        displayedText.addEventListener('click', updateDecipheredText);
+    </script>
 </body>
 </html>
