@@ -252,6 +252,7 @@ Zxha, fod sop`;
         const cipherMap = {};
         const usedLetters = new Map();
         let focusedInput = null;
+        let currentHighlightedLetter = null; // Track the currently highlighted letter
 
         // Initialize cipher list
         function initializeCipherList() {
@@ -274,9 +275,12 @@ Zxha, fod sop`;
                     focusedInput = event.target;
                 }); // auto-select on focus
 
-                // Add event listeners to the entire cipher item div
-                item.addEventListener('mouseover', () => highlightAll(letter));
-                item.addEventListener('mouseout', () => clearHighlight());
+                // Replace mouseeover/mouseout with click event
+                item.addEventListener('click', (event) => {
+                    // Prevent the document click handler from immediately clearing the highlight
+                    event.stopPropagation();
+                    toggleHighlight(letter);
+                });
 
                 cipherList.appendChild(item);
 
@@ -285,6 +289,32 @@ Zxha, fod sop`;
 
             updateUsedLetters();
             updateDecipheredText();
+
+            // Add document click handler to clear highlights when clicking outside of characters
+            document.addEventListener('click', () => {
+                // Only clear if something is highlighted
+                if (currentHighlightedLetter !== null) {
+                    clearHighlight();
+                    currentHighlightedLetter = null;
+                }
+            });
+        }
+
+        // Function to toggle highlight on and off for a letter
+        function toggleHighlight(letter) {
+            if (currentHighlightedLetter === letter) {
+                // If clicking the same letter again, turn off highlight
+                clearHighlight();
+                currentHighlightedLetter = null;
+            } else {
+                // If highlighting a new letter, first clear any existing highlights
+                if (currentHighlightedLetter !== null) {
+                    clearHighlight();
+                }
+                // Then highlight the new letter
+                highlightAll(letter);
+                currentHighlightedLetter = letter;
+            }
         }
 
         // Function to convert normal letters to "encrypted-looking" display
@@ -366,19 +396,27 @@ Zxha, fod sop`;
                     } else {
                         span.className = 'unassigned'; // Otherwise it's unassigned
                     }
+
+                    // Replace hover with click event
+                    span.addEventListener('click', (event) => {
+                        // Stop propagation to prevent document click from immediately clearing
+                        event.stopPropagation();
+                        toggleHighlight(span.dataset.originalLetter);
+                    });
                 } else {
                     span.textContent = char; // Keep non-alphabet characters unchanged
                     span.style.color = 'black'; // Default color
                 }
 
-                // Add hover effects
-                span.addEventListener('mouseover', () => highlightAll(span.dataset.originalLetter));
-                span.addEventListener('mouseout', () => clearHighlight());
-
                 decipheredText.appendChild(span);
             }
 
             applyHyperLinkEffect();
+
+            // If there was a highlighted letter, re-highlight it after updating
+            if (currentHighlightedLetter !== null) {
+                highlightAll(currentHighlightedLetter);
+            }
         }
 
         // Update highlightAll to include cipher input fields and their labels
@@ -418,8 +456,7 @@ Zxha, fod sop`;
 
         // Add hover listeners to cipher inputs (update to remove redundant event listeners)
         document.addEventListener('DOMContentLoaded', () => {
-            // We don't need these anymore since we're adding event listeners to the entire cipher item div
-            // The existing event listeners on the input fields can remain for backward compatibility
+            // No longer needed since we're using click events now
         });
 
         function applyHyperLinkEffect() {
