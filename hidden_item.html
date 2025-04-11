@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hidden Item Question</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+        }
+        body {
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            font-family: 'Playfair Display', serif;
+            color: #3a3221;
+            position: relative;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        .question {
+            font-size: 28px;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: gold;
+            background-color: rgba(240, 230, 210, 0.85);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            font-family: 'Special Elite', cursive;
+            letter-spacing: 1px;
+            border: 1px solid #8b6b4c;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+        .answer-box {
+            margin: 0 auto;
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 400px;
+            width: 80%;
+            z-index: 10;
+        }
+        .answer-box input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 18px;
+            border: 2px solid #8b6b4c;
+            border-radius: 5px;
+            background-color: #e8dcc3;
+            color: #3a3221;
+            font-family: 'Playfair Display', serif;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .answer-box input:focus {
+            outline: none;
+            border-color: #5b1e16;
+            box-shadow: 0 0 8px rgba(91, 30, 22, 0.4);
+        }
+        .answer-box input::placeholder {
+            color: #8b6b4c;
+            opacity: 0.7;
+        }
+        .question.correct {
+            color: #2b580c;
+            border-color: #2b580c;
+        }
+        .victory-message {
+            font-family: 'Special Elite', cursive;
+            color: #e8dcc3;
+            text-align: center;
+            line-height: 1.6;
+            max-width: 80%;
+            position: relative;
+            z-index: 10;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body style="background-image: url('it fun time/chest.jpg');">
+    <div class="overlay"></div>
+    <div class="question">
+        "Where is the item hide?"
+    </div>
+    <div class="answer-box">
+        <input type="text" id="answer" placeholder="Type your answer here..." autocomplete="off">
+    </div>
+    <script>
+        // Add event listener when the document is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const answerInput = document.getElementById('answer');
+            answerInput.addEventListener('input', checkAnswer);
+            answerInput.focus(); // Auto-focus the input field
+        });
+
+        function checkAnswer() {
+            const answerInput = document.getElementById('answer');
+            const question = document.querySelector('.question');
+
+            // Check if answer is "under the throne of the king"
+            if (answerInput.value.trim().toLowerCase() === 'under the throne of the king') {
+                // Change appearance on correct answer
+                question.classList.add('correct');
+
+                // Add fade-out effect
+                setTimeout(function() {
+                    // Fade out elements
+                    document.querySelector('.question').style.transition = 'opacity 1.5s';
+                    document.querySelector('.answer-box').style.transition = 'opacity 1.5s';
+                    document.querySelector('.question').style.opacity = '0';
+                    document.querySelector('.answer-box').style.opacity = '0';
+
+                    // Fade out background
+                    document.querySelector('.overlay').style.transition = 'background-color 2s';
+                    document.querySelector('.overlay').style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+
+                    setTimeout(function() {
+                        // Remove elements
+                        document.querySelector('.question').style.display = 'none';
+                        document.querySelector('.answer-box').style.display = 'none';
+
+                        // Do not change background image, keep the chest image but gray it out
+                        document.body.style.filter = "grayscale(100%)";
+
+                        // Create an embedded YouTube iframe for audio (hidden)
+                        const soundFrame = document.createElement('iframe');
+                        soundFrame.style.width = '0';
+                        soundFrame.style.height = '0';
+                        soundFrame.style.border = 'none';
+                        soundFrame.style.position = 'absolute';
+                        soundFrame.allow = 'autoplay';
+                        // YouTube embed with autoplay, start at 7 seconds
+                        soundFrame.src = 'https://www.youtube.com/embed/69AyYUJUBTg?autoplay=1&start=7';
+                        document.body.appendChild(soundFrame);
+
+                        // Create message element but don't show it yet
+                        const newMessage = document.createElement('div');
+                        newMessage.textContent = "You found the hidden weapon!";
+                        newMessage.className = 'victory-message';
+                        newMessage.style.position = 'absolute';
+                        newMessage.style.top = '50%';
+                        newMessage.style.left = '50%';
+                        newMessage.style.transform = 'translate(-50%, -50%)';
+                        newMessage.style.fontSize = '28px';
+                        newMessage.style.opacity = '0';
+                        newMessage.style.transition = 'opacity 2s';
+                        document.body.appendChild(newMessage);
+
+                        // Wait for the YouTube sound to finish (approximately 3 seconds)
+                        setTimeout(function() {
+                            newMessage.style.opacity = '1';
+
+                            // After 1 second of showing the message, change the background to weapon.png
+                            setTimeout(function() {
+                                // Fix path issue by ensuring proper path to weapon.png
+                                document.body.style.backgroundImage = 'url("it fun time/weapon.png")';
+                                document.body.style.filter = "none"; // Remove all filters
+                                document.querySelector('.overlay').style.backgroundColor = 'rgba(0, 0, 0, 0.1)'; // Make overlay lighter
+
+                                // Debug log to verify the image path
+                                console.log("Setting background image to: it fun time/weapon.png");
+                            }, 1000);
+
+                        }, 3000);
+
+                    }, 1500);
+                }, 1000);
+
+                console.log('Correct answer detected!');
+            } else {
+                question.classList.remove('correct');
+            }
+        }
+    </script>
+</body>
+</html>
