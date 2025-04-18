@@ -237,17 +237,21 @@
 
         // Define original text as a constant instead of reading from hidden input
         const originalText = `
-Xil fgx favf os tahd sguhe.
-Pah acbhdefoxi os:
+
+Xip fga favf os tahd sguhe.
+Fga acbhdefoxi os:
 Xqfah fga zxxh, za qonip lyna fu x fhaxsnha fhuta.
 Fga fhaxsnha fhuta os ehufabfap jd x sahas uq fhxes xip enrryas.
 Paxpppp.
 Fncuhap fu ja bnhsap.
 Pah Sbgxfr osf oi aoiac kagaocai Uhf nifah pac Fghui pas Luioks.
-Hubxfap oi x goppai xhax nipah fga fghuia uq fga loik.
+Fga fhaxsnha fhuta os sxop fu ja goppai oi x sabhaf yubxfoui.
+Yubxfap oi x goppai xhax nipah fga fghuia uq fga loik.
 Pah Sbgxfr osf sagh zahftuyy.
-Fga fhaxsnha fhuta sxop fu kota fga qoipah khaxf zaxyfg xip euzah.
-Qun fgun da uyp, Kup ynbl fu fga qoipah.`;
+Fga fhaxsnha fhuta sxop fu kota fga qoipah khaxf euzah jaduip ocxkoixfoui.
+Quh fga qoipah, of os x khaxf quhfnia.
+Qun fgun da gahu, Kup ynbl fu fga qoipah.`;
+
 
         const alphabet = 'abcdefghijklmnopqrstuvwxyz';
         const cipherMap = {};
@@ -363,10 +367,42 @@ Qun fgun da uyp, Kup ynbl fu fga qoipah.`;
                 } else {
                     usedLetters.set(value, usedLetters.get(value) + 1);
                 }
-            }
+            }            updateUsedLetters();
+            updateDecipheredText();            // Compute live match percentage of user entries against a-z mapping
+            // The correct mapping for decryption (xjbpaqkgowlyciuemhsfntzvdr)
+            const mappingMap = {
+                'a': 'e', 'b': 'c', 'c': 'm', 'd': 'y', 'e': 'p', 'f': 't',
+                'g': 'h', 'h': 'r', 'i': 'n', 'j': 'b', 'k': 'g', 'l': 'k',
+                'm': 'q', 'n': 'u', 'o': 'i', 'p': 'd', 'q': 'f', 'r': 'z',
+                's': 's', 't': 'v', 'u': 'o', 'v': 'x', 'w': 'j', 'x': 'a',
+                'y': 'l', 'z': 'w'
+            };
+            const letters = alphabet.split('');
+            let matchCount = 0;
+            let debugInfo = [];
 
-            updateUsedLetters();
-            updateDecipheredText();
+            // Check each letter to see if user input matches expected value
+            letters.forEach((letter) => {
+                const inputEl = document.querySelector(`input[data-letter="${letter}"]`);
+                const userInput = (inputEl && inputEl.value.toLowerCase()) || '_';
+                const expectedValue = mappingMap[letter] || '_';
+                debugInfo.push(`${letter} should be ${expectedValue}`);
+                if (userInput === expectedValue) {
+                    debugInfo.push(`Match: ${letter} = ${userInput}`);
+                    matchCount++;
+                }
+            });
+
+            console.log("Debug comparisons:", debugInfo);
+            const matchPercent = (matchCount / letters.length) * 100;
+
+            // Build current key string, using '_' for missing entries
+            const userKeyStr = letters.map(letter => {
+                const inputEl = document.querySelector(`input[data-letter="${letter}"]`);
+                return (inputEl && inputEl.value.toLowerCase()) || '_';
+            }).join('');
+
+            console.log(`Current key: ${userKeyStr} | Match count: ${matchCount}/${letters.length} | Match percent: ${matchPercent.toFixed(2)}%`);
         }
 
         // Update deciphered text based on cipherMap
