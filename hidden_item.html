@@ -153,7 +153,7 @@
 
                         // Create message element but don't show it yet
                         const newMessage = document.createElement('div');
-                        newMessage.textContent = "You found the hidden weapon!";
+                        newMessage.textContent = "You found the hidden potion!";
                         newMessage.className = 'victory-message';
                         newMessage.style.position = 'absolute';
                         newMessage.style.top = '50%';
@@ -168,15 +168,13 @@
                         setTimeout(function() {
                             newMessage.style.opacity = '1';
 
-                            // After 1 second of showing the message, change the background to weapon.png
                             setTimeout(function() {
-                                // Fix path issue by ensuring proper path to weapon.png
-                                document.body.style.backgroundImage = 'url("it fun time/weapon.png")';
+                                document.body.style.backgroundImage = 'url("it fun time/grant.jpg")';
                                 document.body.style.filter = "none"; // Remove all filters
                                 document.querySelector('.overlay').style.backgroundColor = 'rgba(0, 0, 0, 0.1)'; // Make overlay lighter
 
                                 // Debug log to verify the image path
-                                console.log("Setting background image to: it fun time/weapon.png");
+                                console.log("Setting background image to: it fun time/grant.jpg");
                             }, 1000);
 
                         }, 3000);
